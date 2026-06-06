@@ -35,5 +35,51 @@ pub fn parse_replay_frames(reader: &mut BufReader<File>, header: &ReplayHeaderFi
         cells = 10;
     }
 
-    unimplemented!()
+    let total = header.get_total_frames().max(0) as usize;
+    let mut frames: Vec<ReplayFrameFinal> = Vec::with_capacity(total);
+
+    for _ in 0..total {
+        let pos = [
+            read_to_num!(reader, 4, f32),
+            read_to_num!(reader, 4, f32),
+            read_to_num!(reader, 4, f32),
+        ];
+        let ang = [
+            read_to_num!(reader, 4, f32),
+            read_to_num!(reader, 4, f32),
+        ];
+
+        // dont have to retain here because we mark unknown bits as UNUSEDX but might aswell
+        let buttons = ButtonFlags::from_bits_retain(read_to_num!(reader, 4, u32));
+
+        let (flags, mt) = if cells >= 8 {
+            let flags = EntityFlags::from_bits_retain(read_to_num!(reader, 4, u32));
+            let mt = MoveType::try_from(read_to_num!(reader, 4, i32))?;
+            (Some(flags), Some(mt))
+        } else {
+            (None, None)
+        };
+
+        let (mouse, velocity) = if cells >= 10 {
+            // the replay format packs 2 i16s into an i32, but we can just read 2 i16s
+            // mousex | (mousey << 16) and forwardmove | (sidemove << 16)
+            let mouse = [read_to_num!(reader, 2, i16), read_to_num!(reader, 2, i16)];
+            let velocity = [read_to_num!(reader, 2, i16), read_to_num!(reader, 2, i16)];
+            (Some(mouse), Some(velocity))
+        } else {
+            (None, None)
+        };
+
+        frames.push(ReplayFrameFinal {
+            pos,
+            ang,
+            buttons,
+            flags,
+            mt,
+            mouse,
+            velocity,
+        });
+    }
+
+    Ok(frames)
 }
