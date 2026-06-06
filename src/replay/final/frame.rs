@@ -5,6 +5,7 @@ use super::{
     flags::{ButtonFlags, EntityFlags, MoveType},
     header::ReplayHeaderFinal,
 };
+use crate::read_to_num;
 
 #[derive(Debug)]
 pub struct ReplayFrameFinal {

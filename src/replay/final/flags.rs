@@ -30,6 +30,7 @@
 // #define IN_ATTACK3               (1 << 25)
 
 use bitflags::bitflags;
+use crate::errors::ReplayParsingError;
 
 
 bitflags! {
@@ -144,4 +145,27 @@ pub enum MoveType {
     Observer,
     /// Allows the entity to describe its own physics
     Custom,
+}
+
+// TODO: Figure out the actual values, i didnt check what they actually are
+impl TryFrom<i32> for MoveType {
+    type Error = ReplayParsingError;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        Ok(match value {
+            0 => MoveType::None,
+            1 => MoveType::Isometric,
+            2 => MoveType::Walk,
+            3 => MoveType::Step,
+            4 => MoveType::Fly,
+            5 => MoveType::FlyGravity,
+            6 => MoveType::VPhysics,
+            7 => MoveType::Push,
+            8 => MoveType::Noclip,
+            9 => MoveType::Ladder,
+            10 => MoveType::Observer,
+            11 => MoveType::Custom,
+            o => return Err(ReplayParsingError::InvalidMoveType(o)),
+        })
+    }
 }
