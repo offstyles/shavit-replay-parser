@@ -2,6 +2,7 @@ use std::{fs::File, io::{BufRead, BufReader, Read}};
 
 use crate::errors::ReplayParsingError;
 use crate::replay::steamid3_to_steamid64;
+use crate::{read_to_string, read_to_num};
 
 #[derive(Debug)]
 pub(crate) struct ReplayHeaderFinal {
@@ -15,7 +16,8 @@ pub(crate) struct ReplayHeaderFinal {
     time: Option<f32>,
     steam_id: Option<u64>,
     tickrate: Option<f32>,
-    zone_offset: Option<[f32;2]>
+    zone_offset: Option<[f32;2]>,
+    timestamp: Option<u32>,
 }
 
 impl ReplayHeaderFinal {
@@ -39,6 +41,7 @@ pub fn parse_final_header(reader: &mut BufReader<File>, version: &u8) -> Result<
     let mut steamid_64: Option<u64> = None;
     let mut tickrate: Option<f32> = None;
     let mut zone_offset: Option<[f32; 2]> = None;
+    let mut timestamp: Option<u32> = None;
     
     if version >= &0x03u8 {
         let mut map_buf: Vec<u8> = vec![];
@@ -125,6 +128,11 @@ pub fn parse_final_header(reader: &mut BufReader<File>, version: &u8) -> Result<
         zone_offset = Some([f32::from_le_bytes(zone_offset1), f32::from_le_bytes(zone_offset2)]);
     }
 
+    // included in 0x0c in the header
+    if version >= &0x0cu8 {
+        timestamp = Some(read_to_num!(reader, 4, u32))
+    }
+
     Ok(ReplayHeaderFinal {
         minor_version: *version,
         map: map,
@@ -136,7 +144,8 @@ pub fn parse_final_header(reader: &mut BufReader<File>, version: &u8) -> Result<
         time,
         steam_id: steamid_64,
         tickrate,
-        zone_offset
+        zone_offset,
+        timestamp
     })
 }
 
