@@ -149,24 +149,3 @@ pub fn parse_final_header(reader: &mut BufReader<File>, version: &u8) -> Result<
     })
 }
 
-#[macro_export]
-macro_rules! read_to_num {
-    ($reader:ident, $size:expr, $totype:ty) => {{
-        let mut ___buf: [u8; $size] = [0; $size];
-        let _ = $reader.read_exact(&mut ___buf)?;
-
-        <$totype>::from_le_bytes(___buf)
-    }};
-}
-
-#[macro_export]
-macro_rules! read_to_string {
-    ($reader:ident, $seperator:expr) => {{
-        let mut ___buf: Vec<u8> = vec![];
-        let _ = $reader.read_until($seperator, &mut ___buf)?;
-
-        String::from_utf8(___buf)?
-    }};
-}
-
-use {read_to_num, read_to_string};
