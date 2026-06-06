@@ -18,8 +18,8 @@ pub struct ReplayFrameFinal {
     mt: Option<MoveType>,
 
     // only if subversion is >= 0x06
-    mouse_xy: Option<u32>, // `mousex | (mousey << 16)` // unpack with UnpackSignedShorts
-    velocity: Option<u32>, // basically `forwardmove | (sidemove << 16)` // unpack with UnpackSignedShorts
+    mouse: Option<[i16; 2]>,
+    velocity: Option<[i16; 2]>,
 }
 
 pub fn parse_replay_frames(reader: &mut BufReader<File>, header: &ReplayHeaderFinal) -> Result<Vec<ReplayFrameFinal>, ReplayParsingError> {
