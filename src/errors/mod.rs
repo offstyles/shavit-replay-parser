@@ -17,6 +17,9 @@ pub enum ReplayParsingError {
     #[error("Unable to covert from steamid3 (`{0}`) to steamid64")]
     InvalidSteamID(String),
 
+    #[error("Invalid movetype value: {0}")]
+    InvalidMoveType(i32),
+
     #[error(transparent)]
     IoError(#[from] std::io::Error),
 
